@@ -426,7 +426,36 @@ _the above example is using a programatic routing method to navigate to the para
 ### Two forms of rendering data
 
 ```javascript
-export async function getStaticProps(context) {...}
+import path from 'path';
+import fs from 'fs/promises';
+
+const HomePage = ({ products }) => {
+    return (
+        <ul>
+            {products.map(({ id, title }) => (
+                <li key={id}>{title}</li>
+            ))}
+        </ul>
+    );
+};
+
+export const getStaticProps = async () => {
+    // export async function getStaticProps() {
+    // cwd === current working directory
+    const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
+    // fs === filesystem
+    const jsonData = await fs.readFile(filePath);
+    // JSON.parse === turning json data into javascript data
+    const data = JSON.parse(jsonData);
+
+    return {
+        props: {
+            products: data.products,
+        },
+    };
+};
+
+export default HomePage;
 ```
 
 -   Static Generation
@@ -439,6 +468,9 @@ export async function getStaticProps(context) {...}
     -   it is async so returns a promise
     -   can run code that is server side or client side
     -   code inside the getStaticProps function will not be exposed on the client side
+    -   only runs the static prop if it exists in that file
+    -   getStaticProps must return a props object
+    -   gives access to the filesystem library in the client component
 
--   Server-side Rendering
-    -   created just in time after deployment when a request reaches the server
+<!-- -   Server-side Rendering
+    -   created just in time after deployment when a request reaches the server -->
