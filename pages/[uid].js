@@ -4,7 +4,7 @@ const UserIdPage = (props) => {
 
 export default UserIdPage;
 
-const getServerSideProps = async (context) => {
+export const getServerSideProps = async (context) => {
     const { params } = context;
 
     const userId = params.userId;

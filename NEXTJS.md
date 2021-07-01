@@ -670,5 +670,46 @@ export const getStaticProps = async (context) => {
 -   used when dynamic data can change constantly
 
 ```javascript
+const UserProfilePage = (props) => {
+    return (
+        <div>
+            <h1>{props.username}</h1>
+        </div>
+    );
+};
 
+export default UserProfilePage;
+
+export const getServerSideProps = async (context) => {
+    // context gives access to everything getStaticProps plus request object and response object
+    const { params, req, res } = context;
+
+    return {
+        props: { username: 'Max' },
+    };
+};
 ```
+
+-   With Dynamic Routing
+
+```javascript
+const UserIdPage = (props) => {
+    return <h1>{props.id}</h1>;
+};
+
+export default UserIdPage;
+
+export const getServerSideProps = async (context) => {
+    const { params } = context;
+
+    const userId = params.userId;
+
+    return {
+        props: {
+            id: 'userid-' + userId,
+        },
+    };
+};
+```
+
+-   Behind the scenes with getServerSideProps
