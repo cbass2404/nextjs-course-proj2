@@ -664,3 +664,11 @@ export const getStaticProps = async (context) => {
 -   gives access to props for dynamic pages and server side rendering
 -   do not mix serversideprops and staticprops
     -   they run at different points in time
+-   uses all the same props as getStaticProps except the revalidate prop as it inherently gets re-rendered at load time each time it is called
+-   context in serverSideProps gives access to the complete request object, unlike it getStaticProps
+-   used when you never want an old pre-rendered page, it is always updated
+-   used when dynamic data can change constantly
+
+```javascript
+
+```
