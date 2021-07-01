@@ -471,6 +471,46 @@ export default HomePage;
     -   only runs the static prop if it exists in that file
     -   getStaticProps must return a props object
     -   gives access to the filesystem library in the client component
+    -   incremental static generation lets your static pre-generated page be updated every x seconds
+    -   if request is made it generates the last existing page
+        -   add the revalidate key with second value in seconds to enable incremental static generation
+            _on development server it has no effect_
+
+```javascript
+export const getStaticProps = async () => {
+    // export async function getStaticProps() {
+    // cwd === current working directory
+    const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
+    // fs === filesystem
+    const jsonData = await fs.readFile(filePath);
+    // JSON.parse === turning json data into javascript data
+    const data = JSON.parse(jsonData);
+
+    // can return a redirect object to another page if nothing is found
+    if (!data) {
+        return {
+            redirect: {
+                destination: '/no-data',
+            },
+        };
+    }
+
+    // can set page to show a 404 not found error page if notFound is true
+    if (data.products.length === 0) {
+        return { notFound: true };
+    }
+
+    return {
+        props: {
+            products: data.products,
+        },
+        // incremental static generation with seconds as value
+        revalidate: 10,
+    };
+};
+```
+
+-   getStaticProps does get a prop called context
 
 <!-- -   Server-side Rendering
     -   created just in time after deployment when a request reaches the server -->

@@ -1,17 +1,22 @@
 import path from 'path';
 import fs from 'fs/promises';
 
+import Link from 'next/Link';
+
 const HomePage = ({ products }) => {
     return (
         <ul>
             {products.map(({ id, title }) => (
-                <li key={id}>{title}</li>
+                <li key={id}>
+                    <Link href={`/${id}`}>{title}</Link>
+                </li>
             ))}
         </ul>
     );
 };
 
-export const getStaticProps = async () => {
+export const getStaticProps = async (context) => {
+    console.log('(Re-)Generating');
     // export async function getStaticProps() {
     // cwd === current working directory
     const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
@@ -24,6 +29,7 @@ export const getStaticProps = async () => {
         props: {
             products: data.products,
         },
+        revalidate: 10,
     };
 };
 
