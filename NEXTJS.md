@@ -511,6 +511,156 @@ export const getStaticProps = async () => {
 ```
 
 -   getStaticProps does get a prop called context
+-   it can be used to get hold of the complete parent values
+-   pre-rendering a page requires the use of context to get values, other methods will happen in the browser and not be pre-rendered
 
-<!-- -   Server-side Rendering
-    -   created just in time after deployment when a request reaches the server -->
+### getStaticPaths
+
+-   pre-rendering dynamic pages will not work statically by default
+-   dynamic pages ([id].js etc) don't just need data you also need to know which [id] values will be available
+-   multiple concrete [id] page instances (e.g. id = 1, id = 2 etc.) are pre-generated
+
+```javascript
+export const getStaticProps = async (context) => {
+    const { params } = context;
+
+    const productId = params.pid;
+
+    const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
+    const jsonData = await fs.readFile(filePath);
+    const data = JSON.parse(jsonData);
+
+    const product = data.products.find((product) => product.id === productId);
+
+    return {
+        props: {
+            loadedProduct: product,
+        },
+    };
+};
+
+export const getStaticPaths = async () => {
+    return {
+        paths: [
+            { params: { pid: 'p1' } },
+            { params: { pid: 'p2' } },
+            { params: { pid: 'p3' } },
+        ],
+        fallback: false,
+    };
+};
+```
+
+-   fallback key can help you if you have a LOT of pages to pre-generate
+    -   can be set to true and only pre-generate some pages
+    -   it tells nextjs to pregenerate the specified page only but allow the generation of other links as well
+    -   can lead to issue if you go directly to a non pre-generated address through the url bar (making a fresh request to a post-rendered address)
+    -   be prepared to create a fallback component to accomadate the fallback: true
+    -   nextjs will load the fallback component and then the actual component when it is ready
+
+```javascript
+import { Fragment } from 'react';
+import path from 'path';
+import fs from 'fs/promises';
+
+const ProductDetailPage = ({ loadedProduct }) => {
+    if (!loadedProduct) {
+        return <p>Loading...</p>;
+    }
+
+    return (
+        <Fragment>
+            <h1>{loadedProduct.title}</h1>
+            <p>{loadedProduct.description}</p>
+        </Fragment>
+    );
+};
+
+export const getStaticProps = async (context) => {
+    const { params } = context;
+
+    const productId = params.pid;
+
+    const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
+    const jsonData = await fs.readFile(filePath);
+    const data = JSON.parse(jsonData);
+
+    const product = data.products.find((product) => product.id === productId);
+
+    return {
+        props: {
+            loadedProduct: product,
+        },
+    };
+};
+
+export const getStaticPaths = async () => {
+    return {
+        paths: [{ params: { pid: 'p1' } }],
+        fallback: true,
+    };
+};
+
+export default ProductDetailPage;
+```
+
+-   fallback with a string value of 'blocking' makes nextJS wait for the page to be generated and negates the need for a fallback component
+
+### getStaticPaths dynamically
+
+```javascript
+const getData = async () => {
+    const filePath = path.join(process.cwd(), 'data', 'dummy-backend.json');
+    const jsonData = await fs.readFile(filePath);
+    const data = JSON.parse(jsonData);
+
+    return data;
+};
+
+export const getStaticPaths = async () => {
+    const data = await getData();
+
+    const ids = data.products.map((product) => product.id);
+    const pathsWithParams = ids.map((id) => ({
+        params: { pid: id },
+    }));
+
+    return {
+        paths: pathsWithParams,
+        fallback: false,
+    };
+};
+```
+
+### getStaticProps not found pages
+
+-   setting fallback to true, makes it try to load a page that doesn't exist, causing a failure of the app
+-   to get around this add in a notFound: true parameter in getStaticProps
+
+```javascript
+export const getStaticProps = async (context) => {
+    const { params } = context;
+
+    const productId = params.pid;
+
+    const data = await getData();
+
+    const product = data.products.find((product) => product.id === productId);
+
+    if (!product) {
+        return { notFound: true };
+    }
+
+    return {
+        props: {
+            loadedProduct: product,
+        },
+    };
+};
+```
+
+### getServerSideProps
+
+-   gives access to props for dynamic pages and server side rendering
+-   do not mix serversideprops and staticprops
+    -   they run at different points in time
