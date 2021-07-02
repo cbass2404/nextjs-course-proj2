@@ -83,7 +83,7 @@ export const getStaticProps = async () => {
                     volume: data[key].volume,
                 });
             }
-            return { props: { sales: transformedSales } };
+            return { props: { sales: transformedSales }, revalidate: 10 };
         });
 };
 
