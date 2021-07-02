@@ -1,35 +1,35 @@
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-const LastSalesPage = () => {
-    const [sales, setSales] = useState();
+const LastSalesPage = (props) => {
+    const [sales, setSales] = useState(props.sales);
     // const [isLoading, setIsLoading] = useState(false);
 
-    const { data, error } = useSWR(
-        'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
-    );
+    // const { data, error } = useSWR(
+    //     'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
+    // );
 
-    useEffect(() => {
-        if (data) {
-            const transformedSales = [];
+    // useEffect(() => {
+    //     if (data) {
+    //         const transformedSales = [];
 
-            for (const key in data) {
-                transformedSales.push({
-                    id: key,
-                    username: data[key].username,
-                    volume: data[key].volume,
-                });
-            }
+    //         for (const key in data) {
+    //             transformedSales.push({
+    //                 id: key,
+    //                 username: data[key].username,
+    //                 volume: data[key].volume,
+    //             });
+    //         }
 
-            setSales(transformedSales);
-        }
-    }, [data]);
+    //         setSales(transformedSales);
+    //     }
+    // }, [data]);
 
     // useEffect(() => {
     //     setIsLoading(true);
 
     //     fetch(
-    //         ''
+    //         'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
     //     )
     //         .then((res) => res.json())
     //         .then((data) => {
@@ -49,11 +49,11 @@ const LastSalesPage = () => {
     //         .catch((err) => console.error(err));
     // }, []);
 
-    if (error) {
-        return <p>Failed to load...</p>;
-    }
+    // if (error) {
+    //     return <p>Failed to load...</p>;
+    // }
 
-    if (!data || !sales) {
+    if (!sales) {
         return <p>Loading...</p>;
     }
 
@@ -66,6 +66,25 @@ const LastSalesPage = () => {
             ))}
         </ul>
     );
+};
+
+export const getStaticProps = async () => {
+    return fetch(
+        'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
+    )
+        .then((res) => res.json())
+        .then((data) => {
+            const transformedSales = [];
+
+            for (const key in data) {
+                transformedSales.push({
+                    id: key,
+                    username: data[key].username,
+                    volume: data[key].volume,
+                });
+            }
+            return { props: { sales: transformedSales } };
+        });
 };
 
 export default LastSalesPage;

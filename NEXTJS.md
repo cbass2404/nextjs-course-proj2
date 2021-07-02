@@ -773,3 +773,26 @@ return (
     </ul>
 );
 ```
+
+### combining pre-rendering and fetch
+
+```javascript
+export const getStaticProps = async () => {
+    return fetch(
+        'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
+    )
+        .then((res) => res.json())
+        .then((data) => {
+            const transformedSales = [];
+
+            for (const key in data) {
+                transformedSales.push({
+                    id: key,
+                    username: data[key].username,
+                    volume: data[key].volume,
+                });
+            }
+            return { props: { sales: transformedSales } };
+        });
+};
+```
