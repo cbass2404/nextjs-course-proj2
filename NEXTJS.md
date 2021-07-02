@@ -712,4 +712,64 @@ export const getServerSideProps = async (context) => {
 };
 ```
 
--   Behind the scenes with getServerSideProps
+### Client-Side Data Fetching
+
+-   Some data doesn't need to be or can't be pre-rendered
+    -   data changes with high frequency (e.g. stock data)
+    -   highly user-specific data (e.g. last orders in an online shop)
+    -   partial data (e.g. data that's only used on a part of an page)
+-   Some cases pre-fetching the data for page generation might not work or be required
+-   'traditional' client-side data fetching (e.g. useEffect() with fetch() is fine)
+-   these pages are still pre-rendered by nextjs, but without the data used in the page in api calls
+
+### useSWR
+
+[documentation](https://swr.vercel.app)
+
+```
+$ npm install swr
+```
+
+-   stands for stale-while-revalidate
+-   takes two arguments, the url and how to use the url (fetcher function)
+-   there are many other options you can use with useSWR like auto refetch on re-focus
+
+```javascript
+const { data, error } = useSWR(
+    'https://nextjs-course-25052-default-rtdb.firebaseio.com/sales.json'
+);
+
+useEffect(() => {
+    if (data) {
+        const transformedSales = [];
+
+        for (const key in data) {
+            transformedSales.push({
+                id: key,
+                username: data[key].username,
+                volume: data[key].volume,
+            });
+        }
+
+        setSales(transformedSales);
+    }
+}, [data]);
+
+if (error) {
+    return <p>Failed to load...</p>;
+}
+
+if (!data || !sales) {
+    return <p>Loading...</p>;
+}
+
+return (
+    <ul>
+        {sales.map((sale) => (
+            <li key={sale.id}>
+                {sale.username} - ${sale.volume}
+            </li>
+        ))}
+    </ul>
+);
+```
